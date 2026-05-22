@@ -1,5 +1,9 @@
 import customtkinter as ctk
 from tkinter import messagebox
+from generators.generar_modulo import generar_modulo
+import re
+
+
 
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
@@ -23,6 +27,19 @@ class App(ctk.CTk):
         # FRAME PRINCIPAL
         frame = ctk.CTkFrame(self)
         frame.pack(padx=30, pady=20, fill="both", expand=True)
+
+        # IDENTIFICADOR 
+        self.label_acta = ctk.CTkLabel(
+            frame,
+            text="Acta"
+        )
+        self.label_acta.pack(pady=(20, 5))
+
+        self.entry_acta = ctk.CTkEntry(
+            frame,
+            width=400
+        )
+        self.entry_acta.pack()
 
         # RAZON SOCIAL
         self.label_empresa = ctk.CTkLabel(
@@ -107,26 +124,57 @@ class App(ctk.CTk):
         )
         self.boton_generar.pack(pady=30)
 
+    def valiadar_periodo(self, periodo):
+
+        patron = r"^\d{4}-(0[1-9]|1[0-2])$"
+
+        return re.match(patron, periodo)
+
     def generar_modulo(self):
 
         empresa = self.entry_empresa.get()
         cuit = self.entry_cuit.get()
         convenio = self.combo_convenio.get()
-        desde = self.entry_desde.get()
-        hasta = self.entry_hasta.get()
+        desde = self.entry_desde.get().strip()
+        hasta = self.entry_hasta.get().strip()
+        acta = self.entry_acta.get()
 
-        info = F"""
-            Empresa     :   {empresa}
-            CUIT        :   {cuit}  
-            Convenio    :   {convenio}
-            Desde       :   {desde}
-            Hasta       :   {hasta}
-            """
-        
-        messagebox.showinfo(
-            "Datos Cargados",
-            info
-        )
+        try:
+
+            if not self.valiadar_periodo(desde):
+                raise ValueError(
+                    "Formato Invalido\nUtilice el Formato: Año-Mes"
+                )
+            
+            if not self.valiadar_periodo(hasta):
+                raise ValueError(
+                    "Formato Invalido\nUtilice el Formato: Año-Mes"
+                )
+            
+            if desde > hasta:
+                raise ValueError(
+                    "Periodos Rechazados\nIngrese los Periodos de Forma Correlativa"
+                )
+
+            archivo = generar_modulo(
+                empresa,
+                cuit,
+                desde,
+                hasta,
+                acta,
+            )
+
+            messagebox.showinfo(
+                "0k",
+                F"Excel Generado:\n\n{archivo}"
+            )
+
+        except Exception as e:
+
+            messagebox.showerror(
+                "ERROR",
+                str(e)
+            )
 
 if __name__ == "__main__":
     app = App()
