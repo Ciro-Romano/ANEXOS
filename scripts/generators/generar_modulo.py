@@ -57,7 +57,9 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
     for caracter in caracteres_invalidos:
        empresa = empresa.replace(caracter, "-")
 
-    nombre_archivo = f"Acta N° {acta} - {empresa}.xlsx"
+    empresa_nombre = empresa.upper()
+
+    nombre_archivo = f"Acta N° {acta} - {empresa_nombre}.xlsx"
     ruta_salida = os.path.join(EXPORT_PATH,nombre_archivo)
 
     # copia de template
@@ -96,6 +98,10 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
                 ref=tabla_original.ref
             )
 
+            nueva_tabla.tableStyleInfo = (
+                tabla_original.tableStyleInfo
+            )
+
             ws.add_table(nueva_tabla)
    
         # llevar datos al excel
@@ -107,7 +113,7 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
             italic=True,    #cursiva
         )
         ws["B4"].alignment = Alignment(
-            vertical="center",
+            vertical="bottom",
             horizontal="left",
         )
 
@@ -118,7 +124,7 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
             italic=True,
         )
         ws["C5"].alignment = Alignment(
-            vertical="center",
+            vertical="bottom",
             horizontal="right",
         )
 
@@ -129,7 +135,7 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
             italic=True
         )
         ws["I6"].alignment = Alignment(
-            vertical="center",
+            vertical="bottom",
             horizontal="right",
         )
 
@@ -140,7 +146,7 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
             italic=True,
             )
         ws["C6"].alignment = Alignment(
-            vertical="center",
+            vertical="bottom",
             horizontal="right",
         )
     
