@@ -75,36 +75,35 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
     
     # HOJA BASE
     ws_base = wb.active
-    
+    ws_base.title = "_BASE"
+    ws_base.sheet_state = "hidden"
+
+    tabla_original = list(ws_base.tables.values())[0]
+
     # CREAR HOJAS
-    for index, periodo in enumerate(periodos):
+    for periodo in periodos:
 
-        if index == 0:
-
-            ws = ws_base
-
-        else:
-
-            ws = wb.copy_worksheet(ws_base)
+        ws = wb.copy_worksheet(ws_base)
 
         ws.title = periodo
 
-        if index != 0 and ws_base.tables:
+        for table_name in list(ws.tables.keys()):
+            del ws.tables[table_name]
 
-            tabla_original = list(ws_base.tables.values())[0]
+        periodo_tabla = periodo.replace("-", "")[2:]
 
-            nueva_tabla = Table(
-                displayName = F"Modulo_00_{index:03}",
-                ref=tabla_original.ref
-            )
+        nueva_tabla = Table(
+            displayName=f"Modulo_00_{periodo_tabla}",
+            ref=tabla_original.ref
+        )
 
-            nueva_tabla.tableStyleInfo = (
-                tabla_original.tableStyleInfo
-            )
+        nueva_tabla.tableStyleInfo = tabla_original.tableStyleInfo
 
-            ws.add_table(nueva_tabla)
-   
-        # llevar datos al excel
+        nueva_tabla.showAutoFilter = False
+
+        ws.add_table(nueva_tabla)
+
+        # DATOS
         ws["B4"] = empresa.upper()
         ws["B4"].font = Font(
             name="Arial",   #tipo de letra
