@@ -3,6 +3,8 @@ from openpyxl.styles import Font, Alignment
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from openpyxl.worksheet.table import Table
+from openpyxl.utils.cell import range_boundaries
+from openpyxl.utils import get_column_letter
 import shutil
 import os
 
@@ -80,6 +82,49 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
 
     tabla_original = list(ws_base.tables.values())[0]
 
+    wb_modulo = load_workbook(
+        "templates/Modulo-02-04-00.xlsx"
+    )
+
+    ws_modulo = wb_modulo.active
+
+    tabla_modulo = list(
+        ws_modulo.tables.values()
+    )[0]
+
+    min_col_core, min_row_core, max_col_core, max_row_core = (
+        range_boundaries(tabla_original.ref)
+    )
+
+    min_col_mod, min_row_mod, max_col_mod, max_row_mod = (
+        range_boundaries(tabla_modulo.ref)
+    )
+
+    columna_destino = max_col_core + 1
+
+    for col in range(max_col_core + 1, max_col_mod + 1):
+
+        encabezado = ws_modulo.cell(
+            min_row_mod,
+            col
+        ).value
+
+        ws_base.cell(
+            min_row_core,
+            columna_destino
+        ).value = encabezado
+
+        columna_destino += 1
+
+    nuevo_max_col = max_col_mod
+
+    tabla_original.ref = (
+        f"{get_column_letter(min_col_core)}{min_row_core}:"
+        f"{get_column_letter(nuevo_max_col)}{max_row_core}"
+    )
+
+    print("nuevo ref =", tabla_original.ref)
+
     # CREAR HOJAS
     for periodo in periodos:
 
@@ -102,6 +147,16 @@ def generar_modulo(empresa,cuit,desde,hasta,acta):
         nueva_tabla.showAutoFilter = False
 
         ws.add_table(nueva_tabla)
+
+    for col in range(max_col_core + 1, max_col_mod + 1):
+
+        letra = get_column_letter(col)
+
+        ws_base.column_dimensions[
+            letra
+        ].width = ws_modulo.column_dimensions[
+            letra
+        ].width
 
         # DATOS
         ws["B4"] = empresa.upper()
